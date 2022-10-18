@@ -1,16 +1,32 @@
-import Head from 'next/head'
-import { GetStaticProps } from 'next'
-import Container from '../components/container'
-import MoreStories from '../components/more-stories'
-import HeroPost from '../components/hero-post'
-import Intro from '../components/intro'
-import Layout from '../components/layout'
-import { getAllPostsForHome } from '../lib/api'
-import { CMS_NAME } from '../lib/constants'
+import Head from "next/head";
+import { GetStaticProps } from "next";
+import { useEffect, useState } from "react";
+import Container from "../components/container";
+import MoreStories from "../components/more-stories";
+import Intro from "../components/intro";
+import Layout from "../components/layout";
+import { getAllPostsForHome } from "../lib/api";
+import { CMS_NAME } from "../lib/constants";
 
-export default function Index({ allPosts: { edges }, preview }) {
-  const heroPost = edges[0]?.node
-  const morePosts = edges.slice(1)
+export default function Index({ allPosts: posts, preview }) {
+  const [postsData, setPostsData] = useState(posts?.edges || []);
+  const [pageInfo, setPageInfo] = useState(posts?.pageInfo || {});
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setPostsData(posts?.edges || []);
+    setPageInfo(posts?.pageInfo || {});
+  }, [posts?.edges]);
+
+  const loadMore = async () => {
+    setIsLoading(true);
+    const allPosts = await getAllPostsForHome(preview, pageInfo.endCursor);
+
+    const newPosts = postsData.concat( allPosts?.edges || [] );
+    setPostsData( newPosts );
+    setPageInfo( { ...allPosts?.pageInfo } );
+    setIsLoading(false);
+  }
 
   return (
     <Layout preview={preview}>
@@ -19,27 +35,30 @@ export default function Index({ allPosts: { edges }, preview }) {
       </Head>
       <Container>
         <Intro />
-        {heroPost && (
-          <HeroPost
-            title={heroPost.title}
-            coverImage={heroPost.featuredImage}
-            date={heroPost.date}
-            author={heroPost.author}
-            slug={heroPost.slug}
-            excerpt={heroPost.excerpt}
-          />
-        )}
-        {morePosts.length > 0 && <MoreStories posts={morePosts} />}
+        {postsData.length > 0 && <MoreStories posts={postsData} />}
+        {pageInfo.hasNextPage && <div style={{
+          textAlign: "center",
+          marginBottom: "30px"
+        }}>
+          {
+            isLoading ? 'LOADING...' : <button onClick={loadMore} style={{
+              cursor: "pointer",
+              background: "#000",
+              color: "#fff",
+              padding: "10px 25px",
+            }}>LOADMORE</button>
+          }
+        </div>}
       </Container>
     </Layout>
-  )
+  );
 }
 
 export const getStaticProps: GetStaticProps = async ({ preview = false }) => {
-  const allPosts = await getAllPostsForHome(preview)
+  const allPosts = await getAllPostsForHome(preview);
 
   return {
     props: { allPosts, preview },
-    revalidate: 10,
-  }
-}
+    revalidate: 10
+  };
+};

@@ -1,4 +1,4 @@
-const API_URL = process.env.WORDPRESS_API_URL
+const API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL
 
 async function fetchAPI(query = '', { variables }: Record<string, any> = {}) {
   const headers = { 'Content-Type': 'application/json' }
@@ -59,11 +59,15 @@ export async function getAllPostsWithSlug() {
   return data?.posts
 }
 
-export async function getAllPostsForHome(preview) {
+export async function getAllPostsForHome(preview, endCursor = '') {
   const data = await fetchAPI(
     `
-    query AllPosts {
-      posts(first: 20, where: { orderby: { field: DATE, order: DESC } }) {
+    query AllPosts($endCursor: String!) {
+      posts(after: $endCursor, first: 20, where: { orderby: { field: DATE, order: DESC } }) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        },
         edges {
           node {
             title
@@ -94,6 +98,7 @@ export async function getAllPostsForHome(preview) {
       variables: {
         onlyEnabled: !preview,
         preview,
+        endCursor: endCursor ? `${endCursor}` : '',
       },
     }
   )

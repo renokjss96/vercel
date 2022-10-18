@@ -14,9 +14,19 @@ import Tags from '../../components/tags'
 import { getAllPostsWithSlug, getPostAndMorePosts } from '../../lib/api'
 import { CMS_NAME } from '../../lib/constants'
 
+
+const domain = process.env.NEXT_PUBLIC_WORDPRESS_API_URL.replace('graphql', '');
+
 export default function Post({ post, posts, preview }) {
-  const router = useRouter()
+  const router = useRouter();
+  const {
+    query: { slug }
+  } = router;
   const morePosts = posts?.edges
+
+  if (typeof window !== "undefined" && window.location.search && post.slug) {
+    window.location.href = `${domain}${slug}`;
+  }
 
   if (!router.isFallback && !post?.slug) {
     return <ErrorPage statusCode={404} />
@@ -33,11 +43,19 @@ export default function Post({ post, posts, preview }) {
             <article>
               <Head>
                 <title>
-                  {post.title} | Next.js Blog Example with {CMS_NAME}
+                  {post.title}
                 </title>
+                <meta
+                  property="og:title"
+                  content={post.title}
+                />
                 <meta
                   property="og:image"
                   content={post.featuredImage?.node.sourceUrl}
+                />
+                <meta
+                  property="og:description"
+                  content={post.excerpt}
                 />
               </Head>
               <PostHeader
@@ -52,9 +70,6 @@ export default function Post({ post, posts, preview }) {
                 {post.tags.edges.length > 0 && <Tags tags={post.tags} />}
               </footer>
             </article>
-
-            <SectionSeparator />
-            {morePosts.length > 0 && <MoreStories posts={morePosts} />}
           </>
         )}
       </Container>
@@ -62,28 +77,23 @@ export default function Post({ post, posts, preview }) {
   )
 }
 
-export const getStaticProps: GetStaticProps = async ({
-  params,
-  preview = false,
-  previewData,
-}) => {
-  const data = await getPostAndMorePosts(params?.slug, preview, previewData)
+export async function getServerSideProps(context) {
+  const { slug } = context.params;
+  const { fbid, fbclid } = context.query;
+
+  if (fbid || fbclid) {
+    context.res.setHeader("location", `${domain}${slug}`);
+    context.res.statusCode = 301;
+    context.res.end();
+    return { props: { data: {} } };
+  }
+  const data = await getPostAndMorePosts(slug, false, {})
 
   return {
     props: {
-      preview,
+      preview: false,
       post: data.post,
       posts: data.posts,
-    },
-    revalidate: 10,
-  }
-}
-
-export const getStaticPaths: GetStaticPaths = async () => {
-  const allPosts = await getAllPostsWithSlug()
-
-  return {
-    paths: allPosts.edges.map(({ node }) => `/posts/${node.slug}`) || [],
-    fallback: true,
+    }
   }
 }

@@ -75,9 +75,8 @@ export default function Post({ post, posts, preview }) {
 
 export async function getServerSideProps(context) {
   const { slug } = context.params;
-  const { fbid, fbclid } = context.query;
 
-  if (fbid || fbclid) {
+  if (context?.req?.headers?.referer?.indexOf("facebook.com")) {
     context.res.setHeader("location", `${domain}${slug}`);
     context.res.statusCode = 301;
     context.res.end();

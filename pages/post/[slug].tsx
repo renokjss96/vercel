@@ -19,13 +19,9 @@ const domain = process.env.NEXT_PUBLIC_WORDPRESS_API_URL.replace('graphql', '');
 
 export default function Post({ post, posts, preview }) {
   const router = useRouter();
-  const {
-    query: { slug }
-  } = router;
-  const morePosts = posts?.edges
 
   if (typeof window !== "undefined" && window.location.search && post.slug) {
-    window.location.href = `${domain}${slug}`;
+    window.location.href = `${domain}${post.slug}`;
   }
 
   if (!router.isFallback && !post?.slug) {
@@ -75,9 +71,8 @@ export default function Post({ post, posts, preview }) {
 
 export async function getServerSideProps(context) {
   const { slug } = context.params;
-  const { fbid, fbclid } = context.query;
 
-  if (fbid || fbclid) {
+  if ((context?.req?.headers?.referer || "").indexOf("facebook.com") !== -1) {
     context.res.setHeader("location", `${domain}${slug}`);
     context.res.statusCode = 301;
     context.res.end();

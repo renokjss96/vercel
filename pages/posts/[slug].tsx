@@ -17,10 +17,12 @@ import { CMS_NAME } from '../../lib/constants'
 
 const domain = process.env.NEXT_PUBLIC_WORDPRESS_API_URL.replace('graphql', '');
 
-export default function Post({ post, posts, preview }) {
+export default function Post({ post, preview }) {
   const router = useRouter();
 
-  if (typeof window !== "undefined" && window.location.search && post.slug) {
+  const isRedirect = (typeof window !== "undefined" && (window.location.search || (typeof document !== "undefined" && document.referrer.indexOf("facebook.com") !== -1)) && post.slug) ? true : false;
+
+  if (isRedirect) {
     window.location.href = `${domain}${post.slug}`;
   }
 
@@ -50,17 +52,8 @@ export default function Post({ post, posts, preview }) {
                   content={post.featuredImage?.node.sourceUrl}
                 />
               </Head>
-              <PostHeader
-                title={post.title}
-                coverImage={post.featuredImage}
-                date={post.date}
-                author={post.author}
-                categories={post.categories}
-              />
-              <PostBody content={post.content} />
-              <footer>
-                {post.tags.edges.length > 0 && <Tags tags={post.tags} />}
-              </footer>
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold tracking-tighter leading-tight md:leading-none mb-12 text-center md:text-left">{post.title}</h1>
+              <p>You are being redirected to the post, please wait 1-2 seconds...</p>
             </article>
           </>
         )}
@@ -84,7 +77,6 @@ export async function getServerSideProps(context) {
     props: {
       preview: false,
       post: data.post,
-      posts: data.posts,
     }
   }
 }

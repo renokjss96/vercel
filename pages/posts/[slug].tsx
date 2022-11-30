@@ -69,7 +69,10 @@ export async function getServerSideProps(context) {
     context.res.setHeader("location", `${domain}${slug}`);
     context.res.statusCode = 301;
     context.res.end();
-    return { props: { data: {} } };
+    return { props: {
+      preview: false,
+      post: {},
+    } };
   }
   const data = await getPostAndMorePosts(slug, false, {})
 

@@ -64,18 +64,18 @@ export default function Post({ post, preview }) {
 
 export async function getServerSideProps(context) {
   const { slug } = context.params;
-
-//   if (context.req.headers.referer) {
-//     if (context.req.headers.referer.indexOf("facebook.com") !== -1) {
-//       context.res.setHeader("location", `${domain}${slug}`);
-//       context.res.statusCode = 301;
-//       context.res.end();
-//       return { props: {
-//         preview: false,
-//         post: {},
-//       } };
-//     }
-//   }
+  
+  const referringURL = context.req.headers?.referer || null;
+  const fbclid = context.query.fbclid;
+  
+  if ((referringURL && referringURL.indexOf("facebook.com") !== -1) || fbclid) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: `${domain}${encodeURI(slug)}`,
+      },
+    };
+  }
   
   const data = await getPostAndMorePosts(slug, false, {})
 

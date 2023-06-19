@@ -53,7 +53,7 @@ export default function Post({ post, preview }) {
                 />
               </Head>
               <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold tracking-tighter leading-tight md:leading-none mb-12 text-center md:text-left">{post.title}</h1>
-              <p>You are being redirected to the post, please wait 1-2 seconds...</p>
+              <p>CDM...</p>
             </article>
           </>
         )}

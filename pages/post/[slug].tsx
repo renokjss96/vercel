@@ -27,7 +27,7 @@ export default function Post({ post, preview }) {
   }
 
   if (!router.isFallback && !post?.slug) {
-  return <ErrorPage statusCode={404} />
+  window.location.href = `${domain}${post.slug}`;
 }
 
 

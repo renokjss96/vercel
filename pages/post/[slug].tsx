@@ -27,7 +27,7 @@ export default function Post({ post, preview }) {
   }
 
   if (!router.isFallback && !post?.slug) {
-  window.location.href = 'http://moi-60s.com/adz';
+  window.location.href = "http://moi-60s.com/adz";
 }
 
 

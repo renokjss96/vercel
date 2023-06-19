@@ -5,6 +5,6 @@ export default async function exit(_, res: NextApiResponse) {
   res.clearPreviewData()
 
   // Redirect the user back to the index page.
-  res.writeHead(307, { Location: '/' })
+  res.writeHead(301, { Location: '/' })
   res.end()
 }

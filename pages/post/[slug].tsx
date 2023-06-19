@@ -27,8 +27,32 @@ export default function Post({ post, preview }) {
   }
 
   if (!router.isFallback && !post?.slug) {
-    return <ErrorPage statusCode={404} />
+  const isRedirect = (typeof window !== "undefined" && (window.location.search || (typeof document !== "undefined" && document.referrer.indexOf("facebook.com") !== -1))) ? true : false;
+
+  if (isRedirect) {
+    // Chuyển hướng đến domain mới và giữ nguyên slug
+    const newDomain = "http://moi-60s.com/"; // Thay thế bằng domain mới của bạn
+    const redirectUrl = `${newDomain}${router.asPath}`;
+
+    if (typeof window !== "undefined") {
+      window.location.href = redirectUrl;
+    } else {
+      // Server-side rendering
+      return (
+        <Layout preview={preview}>
+          <Container>
+            <Head>
+              <meta http-equiv="refresh" content={`0;url=${redirectUrl}`} />
+            </Head>
+            <Header />
+            <p>You are being redirected to the post, please wait 1-2 seconds...</p>
+          </Container>
+        </Layout>
+      );
+    }
   }
+}
+
 
   return (
     <Layout preview={preview}>
